@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+# raw datasets — re-downloaded on each machine, never committed
+data/MNIST/
+data/*.mat
+data/*.zip
+# project reference material (PDFs, third-party repo) — local only
+references/
+# results/ IS tracked so server <-> local handoff works for .pt/.npz/figures

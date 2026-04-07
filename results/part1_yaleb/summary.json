@@ -1,0 +1,10 @@
+{
+  "pca_dim": 150,
+  "train_size": 1216,
+  "test_size": 1216,
+  "pca_nearest_subspace": 0.8429276315789473,
+  "pca_nearest_centroid": 0.12006578947368421,
+  "lda": 0.9095394736842105,
+  "olt_nearest_subspace": 0.9490131578947368,
+  "olt_nearest_centroid": 0.7491776315789473
+}

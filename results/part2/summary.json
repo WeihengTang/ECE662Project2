@@ -1,0 +1,15 @@
+{
+  "pca_dim": 50,
+  "d_out": 20,
+  "n_per_class_train": 300,
+  "task1": {
+    "T_orig -> orig": 0.6975,
+    "T_orig -> rot": 0.4745,
+    "T_rot  -> orig": 0.5585,
+    "T_rot  -> rot": 0.5155
+  },
+  "task2": {
+    "T_joint -> orig": 0.745,
+    "T_joint -> rot": 0.6355
+  }
+}
