@@ -1,0 +1,42 @@
+[
+  {
+    "lambda": 0.0,
+    "acc_orig": 0.9919,
+    "acc_rot": 0.8582,
+    "feature_diagnostics": {
+      "sum_per_class_nuclear": 10815.99169921875,
+      "global_nuclear": 6240.13671875,
+      "ratio_global_over_perclass": 0.5769361601119508
+    }
+  },
+  {
+    "lambda": 0.1,
+    "acc_orig": 0.9921,
+    "acc_rot": 0.8653,
+    "feature_diagnostics": {
+      "sum_per_class_nuclear": 2637.408493041992,
+      "global_nuclear": 2141.271728515625,
+      "ratio_global_over_perclass": 0.8118847475333174
+    }
+  },
+  {
+    "lambda": 0.5,
+    "acc_orig": 0.9914,
+    "acc_rot": 0.8598,
+    "feature_diagnostics": {
+      "sum_per_class_nuclear": 1780.9891204833984,
+      "global_nuclear": 1687.0867919921875,
+      "ratio_global_over_perclass": 0.9472751812960408
+    }
+  },
+  {
+    "lambda": 1.0,
+    "acc_orig": 0.7926,
+    "acc_rot": 0.6195,
+    "feature_diagnostics": {
+      "sum_per_class_nuclear": 1479.6066083610058,
+      "global_nuclear": 1436.5269775390625,
+      "ratio_global_over_perclass": 0.970884402260366
+    }
+  }
+]
