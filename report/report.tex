@@ -287,10 +287,10 @@ noisy (over $77\%$ incorrect).
 
 The most remarkable observation is OLT's behavior under this massive
 label noise. Instead of entirely overfitting to the erroneous
-pseudo-labels, the OLT objective (specifically the nuclear norm) acts as
-a powerful structural prior. By forcing the data into orthogonal
-low-rank subspaces, OLT inherently filters out the unstructured noise
-introduced by the flawed spectral initialization. Consequently, it
+pseudo-labels, the nuclear-norm minimization acts as a powerful
+structural prior. By forcing the data into orthogonal low-rank
+subspaces, OLT is inherently robust to the label corruption introduced
+by the flawed spectral initialization. Consequently, it
 achieves a relative improvement of over $50\%$ in Accuracy and more than
 triples the ARI ($0.055 \rightarrow 0.186$). This empirically
 demonstrates that OLT is not merely learning to memorize its supervisory
