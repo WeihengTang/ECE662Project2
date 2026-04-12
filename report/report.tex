@@ -274,6 +274,29 @@ the noisy pseudo-labels into a substantially better partition.}
 \label{fig:yaleb_clust}
 \end{figure}
 
+\paragraph{Discussion.}
+At first glance, an absolute accuracy of $0.350$ might appear modest.
+However, it is crucial to contextualize this within the extreme
+difficulty of the task: performing completely unsupervised clustering on
+38 distinct subjects under severe illumination variations.
+
+The baseline spectral clustering struggles significantly, yielding an
+accuracy of only $0.229$ and an ARI of $0.055$. This means the
+pseudo-labels fed into the OLT training pipeline were overwhelmingly
+noisy (over $77\%$ incorrect).
+
+The most remarkable observation is OLT's behavior under this massive
+label noise. Instead of entirely overfitting to the erroneous
+pseudo-labels, the OLT objective (specifically the nuclear norm) acts as
+a powerful structural prior. By forcing the data into orthogonal
+low-rank subspaces, OLT inherently filters out the unstructured noise
+introduced by the flawed spectral initialization. Consequently, it
+achieves a relative improvement of over $50\%$ in Accuracy and more than
+triples the ARI ($0.055 \rightarrow 0.186$). This empirically
+demonstrates that OLT is not merely learning to memorize its supervisory
+signals, but is actively uncovering the intrinsic geometric structure of
+the data.
+
 \section{Part 2: Modality-Invariant OLT}
 
 We use Original MNIST as modality~$o$ and Rotated MNIST (per-sample
