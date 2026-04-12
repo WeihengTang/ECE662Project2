@@ -141,6 +141,14 @@ dominant direction (rank-$1$ singular spectrum).}
 
 \subsection{Task 2 -- YaleB classification, OLT vs.\ LDA}
 
+\paragraph{OLT loss.} The loss used here is exactly the OLT objective
+defined in~\eqref{eq:olt}, applied to the PCA-projected training
+features: $\sum_c \nuc{\T\Y_c} - \nuc{\T\Y}$ subject to
+$\spn{\T}=1$, optimised via CCCP as in Section~\ref{sec:cccp}. No
+modification to the formulation is needed for classification; the
+same low-rank plus orthogonality prior applies directly to the
+face-illumination subspaces.
+
 \paragraph{Setup.} Extended YaleB (38 subjects, 64 illumination
 conditions each, $48\times 42$ pixels) is fetched by
 \texttt{scripts/download\_yaleb.py}. We use a stratified $50/50$
@@ -181,6 +189,44 @@ subspace rule outperforms LDA by $\sim 4$ points.}
 \caption{YaleB test accuracy by method.}
 \label{fig:yaleb_acc}
 \end{figure}
+
+\paragraph{Comparison and analysis.}
+
+\emph{When does OLT outperform LDA?}
+OLT paired with the nearest-subspace classifier ($94.9\%$) outperforms
+LDA ($91.0\%$) by $\sim\!4$ percentage points. The advantage arises
+because of a fundamental modelling difference: LDA assumes each class
+is a unimodal Gaussian cluster (one mean, shared covariance), while
+OLT models each class as an entire \emph{subspace}. In YaleB, a
+single subject's face under 64 different lighting conditions spans a
+multi-dimensional illumination subspace rather than a compact point
+cloud; the subspace assumption is a better structural match for this
+data, and the nearest-subspace classifier exploits it at test time.
+
+\emph{When does OLT fail?}
+OLT paired with \emph{nearest-centroid} classification drops to
+$74.9\%$, far below LDA. This makes sense: OLT deliberately spreads
+each class across a low-rank subspace (that is its goal), so the class
+mean becomes a poor representative. The nearest-centroid rule discards
+exactly the within-subspace structure that OLT preserves. In
+contrast, LDA explicitly collapses each class to its centroid in the
+projected space, making nearest-centroid a natural companion. The
+lesson is that OLT \emph{requires} a subspace-aware classifier (such
+as nearest-subspace) to realise its benefit; a point-based rule
+(nearest centroid) negates its geometric prior.
+
+\emph{Further observations.}
+Raw PCA features already work reasonably well with nearest-subspace
+($84.3\%$), confirming that the subspace structure is present in the
+original data. OLT's role is to \emph{purify} those subspaces by
+suppressing within-class rank and rotating them toward orthogonality,
+which narrows the gap between the nearest and second-nearest subspace
+for each test sample and reduces misclassification. We also note that
+running the CCCP solver too long (200 iterations vs.\ 60) causes the
+training objective to shrink further but test accuracy to drop
+($90.1\%$), suggesting the transformation over-collapses the
+subspaces and loses generalisation -- an effect analogous to
+overfitting that practitioners should be aware of.
 
 \subsection{Task 3 -- Subspace clustering on YaleB}
 
