@@ -169,6 +169,10 @@ $\hat{c}=\argmin_c \|(I-B_cB_c^{\top})\,\T x\|_2$ -- the
 \emph{nearest-subspace classifier}. This rule is the natural inference
 counterpart of the nuclear-norm-low-rank objective: it picks the class
 whose linear subspace explains the test sample best.
+For the LDA baseline, we use sklearn's \texttt{LinearDiscriminantAnalysis},
+which projects the data onto the $C\!-\!1$ most discriminative directions
+and classifies via Bayes' rule under a shared-covariance Gaussian model
+(equivalent to a linear decision boundary in the projected space).
 All results are reported in Table~\ref{tab:yaleb_cls} and visualised in
 Figure~\ref{fig:yaleb_acc}.
 
@@ -214,12 +218,12 @@ OLT paired with \emph{nearest-centroid} classification drops to
 $74.9\%$, far below LDA. This makes sense: OLT deliberately spreads
 each class across a low-rank subspace (that is its goal), so the class
 mean becomes a poor representative. The nearest-centroid rule discards
-exactly the within-subspace structure that OLT preserves. In
-contrast, LDA explicitly collapses each class to its centroid in the
-projected space, making nearest-centroid a natural companion. The
-lesson is that OLT \emph{requires} a subspace-aware classifier (such
-as nearest-subspace) to realise its benefit; a point-based rule
-(nearest centroid) negates its geometric prior.
+exactly the within-subspace structure that OLT preserves. In contrast, sklearn's LDA classifier uses Bayes' rule under a shared-covariance
+Gaussian model, producing a \emph{linear decision boundary} that is
+well-matched to LDA's own projection. The lesson is that OLT
+\emph{requires} a subspace-aware classifier (such as nearest-subspace)
+to realise its benefit; a point-based rule (nearest centroid) negates
+its geometric prior.
 
 \emph{Further observations.}
 Raw PCA features already work reasonably well with nearest-subspace
