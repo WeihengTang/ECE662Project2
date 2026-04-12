@@ -96,6 +96,10 @@ non-orthogonal 1D subspaces in $\mathbb{R}^{2}$ (two classes) and
 $\mathbb{R}^{3}$ (three classes). After running CCCP we measure (i) the
 absolute cosine matrix between per-class top principal directions and
 (ii) per-class singular values of the transformed features.
+Figure~\ref{fig:toy3d} shows the 3D results: OLT reduces inter-class
+$|\cos|$ from $0.46$--$0.70$ to $0.01$--$0.14$ and collapses each class
+to a rank-$1$ spectrum. Figure~\ref{fig:toy2d} confirms the same
+behaviour in 2D, where the cosine drops from $0.86$ to $0.08$.
 
 \begin{figure}[h]
 \centering
@@ -165,6 +169,8 @@ $\hat{c}=\argmin_c \|(I-B_cB_c^{\top})\,\T x\|_2$ -- the
 \emph{nearest-subspace classifier}. This rule is the natural inference
 counterpart of the nuclear-norm-low-rank objective: it picks the class
 whose linear subspace explains the test sample best.
+All results are reported in Table~\ref{tab:yaleb_cls} and visualised in
+Figure~\ref{fig:yaleb_acc}.
 
 \begin{table}[h]
 \centering
@@ -242,6 +248,8 @@ pseudo-labels as supervisory targets.
 space to reassign every sample. The reassigned labels are the OLT
 clustering output.
 \end{enumerate}
+Results are reported in Table~\ref{tab:yaleb_clust} and
+Figure~\ref{fig:yaleb_clust}.
 
 \begin{table}[h]\centering
 \begin{tabular}{lccc}
@@ -259,16 +267,24 @@ the noisy pseudo-labels into a substantially better partition.}
 
 \begin{figure}[h]\centering
 \includegraphics[width=0.55\linewidth]{part1_yaleb/yaleb_clustering.png}
-\caption{Clustering metrics.}
+\caption{Clustering metrics: baseline vs.\ OLT on YaleB.}
+\label{fig:yaleb_clust}
 \end{figure}
 
 \section{Part 2: Modality-Invariant OLT}
 
 We use Original MNIST as modality~$o$ and Rotated MNIST (per-sample
-random rotation in $[-45^\circ,+45^\circ]$) as modality~$r$. Inputs are
+random rotation in $[-45^\circ,+45^\circ]$) as modality~$r$;
+Figure~\ref{fig:mnist_samples} shows example digit pairs. Inputs are
 flattened, projected to the top $50$ PCA components fit on the original
 training set, and rescaled. The OLT solver outputs $d_{\text{out}}=20$
 with the same CCCP schedule as before.
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.65\linewidth]{part2/mnist_samples.png}
+\caption{Original (top) and randomly rotated (bottom) MNIST digits.}
+\label{fig:mnist_samples}
+\end{figure}
 
 \subsection{Task 1 -- Per-modality transforms}
 
@@ -291,6 +307,8 @@ problem~\eqref{eq:olt}:
 By \eqref{eq:perp} the minimum drives the joint per-class block to a
 single low-rank subspace shared by both modalities, which is exactly
 the modality-invariance property we want.
+The cross-modality accuracy matrix is given in Table~\ref{tab:part2}
+and visualised in Figure~\ref{fig:mnist_heatmap}.
 
 \begin{table}[h]\centering
 \begin{tabular}{lcc}
@@ -312,6 +330,7 @@ case ($\T_o\to\!$rot) by $+16$ points.}
 \includegraphics[width=0.40\linewidth]{part2/mnist_cross_modality.png}
 \caption{MNIST cross-modality accuracy heatmap. Rows are transforms,
 columns are test modalities.}
+\label{fig:mnist_heatmap}
 \end{figure}
 
 \subsection{Task 3 -- Joint OLT on frozen CNN features}
@@ -323,7 +342,8 @@ epochs with Adadelta on the original MNIST training set
 network is then frozen and the $128$-d penultimate features are
 extracted for both modalities. We learn a joint OLT on the
 concatenated features and re-classify the test sets with
-nearest-subspace.
+nearest-subspace. Results are summarised in Table~\ref{tab:frozen_cnn}
+and Figure~\ref{fig:frozen_cnn}.
 
 \begin{table}[h]\centering
 \begin{tabular}{lcc}
@@ -338,10 +358,13 @@ Frozen CNN $+$ joint OLT $+$ NS  & $0.9850$ & $\mathbf{0.8811}$ \\
 $-0.7$ on the in-distribution test set for a $+1.7$ on the
 unseen rotated test set, confirming that the modality-invariant
 construction transfers to learned features.}
+\label{tab:frozen_cnn}
 \end{table}
 
 \begin{figure}[h]\centering
 \includegraphics[width=0.45\linewidth]{part2/mnist_frozen_vs_olt.png}
+\caption{Frozen CNN accuracy with and without joint OLT.}
+\label{fig:frozen_cnn}
 \end{figure}
 
 \section{Part 3 (Option A): OLT as a neural-network regularizer}
@@ -407,7 +430,8 @@ diagnostic
 r\;=\;\frac{\nuc{\F}}{\sum_c\nuc{\F_c}}\;\in\;[0,1],
 \]
 which equals $1$ exactly when the class feature subspaces are mutually
-orthogonal.
+orthogonal. All results are collected in Table~\ref{tab:part3} and
+Figure~\ref{fig:part3_sweep}.
 
 \subsection{Results}
 
@@ -432,6 +456,7 @@ $1.0$ & $0.7926$ & $0.6195$ & $0.971$ & CE dominated; collapse \\
 $\lambda$. Right: the orthogonality measure $r$ saturates toward $1$
 as $\lambda$ grows, confirming the regularizer reshapes the feature
 geometry as designed.}
+\label{fig:part3_sweep}
 \end{figure}
 
 \subsection{Discussion}
