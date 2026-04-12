@@ -406,22 +406,52 @@ and Figure~\ref{fig:frozen_cnn}.
 \toprule
 Method & Original MNIST & Rotated MNIST \\
 \midrule
-Frozen CNN (baseline)            & $0.9924$ & $0.8639$ \\
-Frozen CNN $+$ joint OLT $+$ NS  & $0.9850$ & $\mathbf{0.8811}$ \\
+Frozen CNN head (fc2)               & $0.9924$ & $0.8639$ \\
+Frozen CNN features $+$ NS (no OLT) & $0.9896$ & $\mathbf{0.8989}$ \\
+Frozen CNN features $+$ OLT $+$ NS  & $0.9850$ & $0.8811$ \\
 \bottomrule
 \end{tabular}
-\caption{The joint OLT applied on top of the frozen CNN trades a small
-$-0.7$ on the in-distribution test set for a $+1.7$ on the
-unseen rotated test set, confirming that the modality-invariant
-construction transfers to learned features.}
+\caption{MNIST test accuracy with frozen CNN features. The middle row
+uses the same nearest-subspace (NS) classifier as the OLT row but
+without the OLT transformation, providing a fair like-for-like
+comparison.}
 \label{tab:frozen_cnn}
 \end{table}
 
 \begin{figure}[h]\centering
-\includegraphics[width=0.45\linewidth]{part2/mnist_frozen_vs_olt.png}
-\caption{Frozen CNN accuracy with and without joint OLT.}
+\includegraphics[width=0.55\linewidth]{part2/mnist_frozen_vs_olt.png}
+\caption{Frozen CNN accuracy: CNN head vs.\ raw features + NS vs.\
+OLT-transformed features + NS.}
 \label{fig:frozen_cnn}
 \end{figure}
+
+\paragraph{Discussion.}
+The results reveal a subtlety that the original two-row comparison
+masked. Simply switching from the CNN's trained linear head (fc2) to the
+nearest-subspace classifier on the raw 128-d features already boosts
+rotated accuracy by $+3.5$ points ($86.39\%\to 89.89\%$), because the
+subspace classifier is naturally more tolerant of within-class variation
+than a point-wise linear boundary.
+
+Against this fair baseline, the joint OLT transformation actually
+\emph{hurts} by $-1.8$ points on the rotated set ($89.89\%\to 88.11\%$).
+This holds even when we raise $d_{\text{out}}$ to $128$ (no dimension
+reduction), ruling out information loss as the cause. The explanation
+lies in a mismatch of assumptions: OLT's nuclear-norm prior assumes
+that each class occupies a \emph{linear} subspace, which fits raw
+pixels and PCA features well (Part~1, Part~2 Tasks~1--2) but not the
+nonlinear, ReLU-activated CNN features. The CNN has already folded the
+illumination/rotation manifold into a representation that is
+well-clustered but not necessarily low-rank in the matrix sense;
+imposing a linear low-rank constraint on top of this over-regularises
+and discards useful nonlinear structure.
+
+This negative result is itself informative: it highlights that the OLT
+linear prior is complementary to, rather than a replacement for, the
+nonlinear feature learning done by CNNs. Part~3 explores a more
+principled integration, where the OLT loss is applied \emph{during}
+training so the network can co-adapt its features to satisfy both the
+cross-entropy and the nuclear-norm objectives.
 
 \section{Part 3 (Option A): OLT as a neural-network regularizer}
 

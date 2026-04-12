@@ -49,9 +49,24 @@ def main():
     f_tr_o /= scale; f_tr_r /= scale
     f_te_o /= scale; f_te_r /= scale
 
-    # Joint OLT on [orig, rot] features (feature-column concatenation)
-    Ztr_joint = np.concatenate([f_tr_o, f_tr_r], axis=0)
-    ytr_joint = np.concatenate([y_tr, y_tr], axis=0)
+    # ---- Fair baseline: nearest-subspace on RAW CNN features (no OLT) ----
+    # This uses the same classifier as the OLT path so the comparison
+    # isolates the effect of OLT, not the difference in classifier.
+    Ztr_raw = np.concatenate([f_tr_o, f_tr_r], axis=0)
+    ytr_raw = np.concatenate([y_tr, y_tr], axis=0)
+    raw_tr_t = torch.from_numpy(Ztr_raw).float()
+    raw_te_o = torch.from_numpy(f_te_o).float()
+    raw_te_r = torch.from_numpy(f_te_r).float()
+    ytr_raw_t = torch.from_numpy(ytr_raw).long()
+
+    subs_raw = fit_class_subspaces(raw_tr_t, ytr_raw_t, energy=0.95, max_rank=6)
+    acc_raw_orig = accuracy(y_te, nearest_subspace_classifier(raw_te_o, subs_raw).numpy())
+    acc_raw_rot  = accuracy(y_te, nearest_subspace_classifier(raw_te_r, subs_raw).numpy())
+    print(f"Frozen CNN + NS (no OLT): orig={acc_raw_orig:.4f}  rot={acc_raw_rot:.4f}")
+
+    # ---- Joint OLT on [orig, rot] features (feature-column concatenation) ----
+    Ztr_joint = Ztr_raw
+    ytr_joint = ytr_raw
     Ztr_t = torch.from_numpy(Ztr_joint).double()
     ytr_t = torch.from_numpy(ytr_joint).long()
 
@@ -70,28 +85,32 @@ def main():
     pred_r = nearest_subspace_classifier(F_te_r, subs).numpy()
     acc_olt_orig = accuracy(y_te, pred_o)
     acc_olt_rot  = accuracy(y_te, pred_r)
-    print(f"Frozen + joint OLT:  orig={acc_olt_orig:.4f}  rot={acc_olt_rot:.4f}")
+    print(f"Frozen CNN + OLT + NS:    orig={acc_olt_orig:.4f}  rot={acc_olt_rot:.4f}")
 
     results = {
-        "baseline_frozen_cnn": {"orig": acc_base_orig, "rot": acc_base_rot},
-        "frozen_plus_olt_ns":  {"orig": acc_olt_orig,  "rot": acc_olt_rot},
+        "baseline_frozen_cnn_head":  {"orig": acc_base_orig,  "rot": acc_base_rot},
+        "frozen_cnn_ns_no_olt":      {"orig": acc_raw_orig,   "rot": acc_raw_rot},
+        "frozen_cnn_olt_ns":         {"orig": acc_olt_orig,   "rot": acc_olt_rot},
     }
     with open(os.path.join(OUT_DIR, "cnn_olt_summary.json"), "w") as f:
         json.dump(results, f, indent=2)
 
-    # bar chart
-    fig, ax = plt.subplots(figsize=(5.0, 3.4))
-    xs = np.arange(2); w = 0.35
-    ax.bar(xs - w/2, [acc_base_orig, acc_base_rot], width=w, label="frozen CNN")
-    ax.bar(xs + w/2, [acc_olt_orig,  acc_olt_rot ], width=w, label="frozen CNN + joint OLT")
-    for x, v in zip(xs - w/2, [acc_base_orig, acc_base_rot]):
-        ax.text(x, v + 0.005, f"{v:.3f}", ha="center", fontsize=8)
-    for x, v in zip(xs + w/2, [acc_olt_orig,  acc_olt_rot]):
-        ax.text(x, v + 0.005, f"{v:.3f}", ha="center", fontsize=8)
+    # bar chart — three methods
+    fig, ax = plt.subplots(figsize=(6.0, 3.6))
+    xs = np.arange(2); w = 0.25
+    vals = [
+        ("CNN head",          [acc_base_orig, acc_base_rot]),
+        ("CNN feat + NS",     [acc_raw_orig,  acc_raw_rot]),
+        ("CNN feat + OLT+NS", [acc_olt_orig,  acc_olt_rot]),
+    ]
+    for i, (lbl, vs) in enumerate(vals):
+        bars = ax.bar(xs + (i - 1) * w, vs, width=w, label=lbl)
+        for x, v in zip(xs + (i - 1) * w, vs):
+            ax.text(x, v + 0.005, f"{v:.3f}", ha="center", fontsize=7)
     ax.set_xticks(xs); ax.set_xticklabels(["original", "rotated"])
     ax.set_ylim(0, 1.05); ax.set_ylabel("test accuracy")
-    ax.set_title("MNIST: frozen CNN vs frozen CNN + joint OLT")
-    ax.legend()
+    ax.set_title("MNIST: frozen CNN — effect of joint OLT on features")
+    ax.legend(fontsize=8)
     plt.tight_layout()
     plt.savefig(os.path.join(OUT_DIR, "mnist_frozen_vs_olt.png"), dpi=160)
     plt.close(fig)

@@ -1,9 +1,13 @@
 {
-  "baseline_frozen_cnn": {
+  "baseline_frozen_cnn_head": {
     "orig": 0.9924,
     "rot": 0.8639
   },
-  "frozen_plus_olt_ns": {
+  "frozen_cnn_ns_no_olt": {
+    "orig": 0.9896,
+    "rot": 0.8989
+  },
+  "frozen_cnn_olt_ns": {
     "orig": 0.985,
     "rot": 0.8811
   }
