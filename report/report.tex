@@ -281,9 +281,10 @@ difficulty of the task: performing completely unsupervised clustering on
 38 distinct subjects under severe illumination variations.
 
 The baseline spectral clustering struggles significantly, yielding an
-accuracy of only $0.229$ and an ARI of $0.055$. This means the
-pseudo-labels fed into the OLT training pipeline were overwhelmingly
-noisy (over $77\%$ incorrect).
+accuracy of only $0.229$ and an ARI of $0.055$. Since this accuracy is
+measured after Hungarian matching (the best possible label permutation),
+the raw pseudo-labels fed into the OLT training pipeline were at least
+$77\%$ incorrect -- and likely worse.
 
 The most remarkable observation is OLT's behavior under this massive
 label noise. Instead of entirely overfitting to the erroneous
