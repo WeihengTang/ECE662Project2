@@ -154,8 +154,7 @@ same low-rank plus orthogonality prior applies directly to the
 face-illumination subspaces.
 
 \paragraph{Setup.} Extended YaleB (38 subjects, 64 illumination
-conditions each, $48\times 42$ pixels) is fetched by
-\texttt{scripts/download\_yaleb.py}. We use a stratified $50/50$
+conditions each, $48\times 42$ pixels) is fetched. We use a stratified $50/50$
 train/test split, project onto the top $150$ PCA components fit on the
 training set ($98.8\%$ explained variance), and rescale features so the
 mean row norm is $\approx 1$. The OLT solver targets $d_{\text{out}}=64$
