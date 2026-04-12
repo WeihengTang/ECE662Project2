@@ -360,6 +360,35 @@ columns are test modalities.}
 \label{fig:mnist_heatmap}
 \end{figure}
 
+\paragraph{Discussion: the vulnerability of single-modality transforms.}
+The results in Table~\ref{tab:part2} clearly demonstrate the severe
+limitations of learning modality-specific transformations in a
+multi-modal setting.
+
+First, we observe a drastic performance degradation during
+cross-modality evaluation. The transform learned on original aligned
+digits ($\T_o$) suffers a large drop (down to $0.4745$) when evaluated
+on rotated digits. This confirms that the orthogonal low-rank subspaces
+optimized for one modality are highly specific to that visual domain and
+fail to generalize when the spatial geometry of the input is altered.
+
+Second, and more fundamentally, learning a standalone transform on the
+rotated modality ($\T_r$) yields poor performance even on its own
+domain ($0.5155$). This occurs because the per-sample random rotation
+destroys the inherent linear alignment (low-rank structure) of the
+digits: instances of the same class are scattered across different
+orientations, making it difficult for OLT to find a compact subspace.
+Notably, $\T_r$ actually scores slightly higher on original digits
+($0.5585$) than on rotated ones, suggesting that whatever partial
+structure it does recover transfers better to the cleaner, aligned
+domain -- further evidence that rotation disrupts per-class rank
+structure.
+
+These failures explicitly motivate the modality-invariant OLT
+($\T_{\text{joint}}$) in the next section, which forces the scattered
+representations from different modalities to align into a shared
+subspace, recovering the underlying low-rank structure across domains.
+
 \subsection{Task 3 -- Joint OLT on frozen CNN features}
 
 We train the standard \texttt{pytorch/examples} MNIST CNN
