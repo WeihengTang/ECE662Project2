@@ -84,8 +84,8 @@ the linearised subproblem becomes
 \end{equation}
 solved by a few proximal subgradient steps followed by a projection
 $\T\leftarrow\T/\sigma_{\max}(\T)$ to enforce the constraint. We
-implement this in \texttt{olt/solver.py}; gradients are scaled by
-$1/N$ so that the step size is dataset-size invariant.
+gradients are scaled by $1/N$ so that the step size is
+dataset-size invariant.
 
 \section{Part 1: OLT with the nuclear norm}
 
@@ -168,7 +168,7 @@ $\hat{c}=\argmin_c \|(I-B_cB_c^{\top})\,\T x\|_2$ -- the
 \emph{nearest-subspace classifier}. This rule is the natural inference
 counterpart of the nuclear-norm-low-rank objective: it picks the class
 whose linear subspace explains the test sample best.
-For the LDA baseline, we use sklearn's \texttt{LinearDiscriminantAnalysis},
+For the LDA baseline, we use scikit-learn's Linear Discriminant Analysis,
 which projects the data onto the $C\!-\!1$ most discriminative directions
 and classifies via Bayes' rule under a shared-covariance Gaussian model
 (equivalent to a linear decision boundary in the projected space).
@@ -391,10 +391,9 @@ subspace, recovering the underlying low-rank structure across domains.
 
 \subsection{Task 3 -- Joint OLT on frozen CNN features}
 
-We train the standard \texttt{pytorch/examples} MNIST CNN
-(\texttt{conv32}-\texttt{conv64}-\texttt{fc128}-\texttt{fc10}) for 10
-epochs with Adadelta on the original MNIST training set
-(\texttt{scripts/train\_part2\_cnn.py}, run on a GPU server). The
+We train a standard MNIST CNN
+(conv32--conv64--fc128--fc10) for 10
+epochs with Adadelta on the original MNIST training set. The
 network is then frozen and the $128$-d penultimate features are
 extracted for both modalities. We learn a joint OLT on the
 concatenated features and re-classify the test sets with
@@ -436,8 +435,7 @@ than a point-wise linear boundary.
 Against this fair baseline, the joint OLT transformation actually
 \emph{hurts} by $-1.8$ points on the rotated set ($89.89\%\to 88.11\%$).
 This holds across all tested output dimensions
-($d_{\text{out}}\in\{32,64,96,128\}$; see the recorded sweep in
-\texttt{cnn\_olt\_summary.json}), ruling out information loss as the
+($d_{\text{out}}\in\{32,64,96,128\}$), ruling out information loss as the
 cause. The explanation
 lies in a mismatch of assumptions: OLT's nuclear-norm prior assumes
 that each class occupies a \emph{linear} subspace, which fits raw
@@ -485,9 +483,9 @@ is
 \;+\;\lambda\,\mathcal{L}_{\text{OLT}}(\F_{\mathcal{B}},y_{\mathcal{B}}),
 \quad\lambda\ge 0.
 \end{equation}
-Because PyTorch's \texttt{torch.linalg.svd} is differentiable, the
+Because PyTorch's SVD is differentiable, the
 gradient of $\mathcal{L}_{\text{OLT}}$ flows all the way back to
-$\theta$. Implementation: \texttt{olt/losses.py}, \texttt{OLTLoss}.
+$\theta$.
 
 \paragraph{Justification.}
 \begin{itemize}
@@ -581,11 +579,9 @@ when used as a soft regularizer.
 
 \section*{Code and reproducibility}
 
-All experiments are reproduced by the scripts in
-\texttt{scripts/} of the project repository. Heavy training was
-performed on a GPU server using the workflow in
-\texttt{scripts/train\_part2\_cnn.py} and
-\texttt{scripts/train\_part3\_olt\_nn.py}; everything else runs on
-CPU within minutes.
+All experiments are reproduced by scripts in
+the project repository. Heavy training (CNN backbone and
+OLT-regularized CNN) was performed on a GPU server; everything else
+runs on CPU within minutes.
 
 \end{document}
