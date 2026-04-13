@@ -132,14 +132,16 @@ fit joint OLT on $[F^o,F^r]$.
 \begin{tabular}{lcc}
 \toprule
 & Orig & Rot \\\midrule
-Frozen CNN baseline & $0.9924$ & $0.8639$ \\
-+ joint OLT + NS & $0.9850$ & $\mathbf{0.8811}$ \\
+Frozen CNN head (fc2)    & $0.9924$ & $0.8639$ \\
+CNN feat + NS (no OLT)   & $0.9896$ & $\mathbf{0.8989}$ \\
+CNN feat + OLT + NS      & $0.9850$ & $0.8811$ \\
 \bottomrule
 \end{tabular}
 \hfill
 \includegraphics[width=0.42\linewidth]{part2/mnist_frozen_vs_olt.png}\\[0.4em]
-{\small $-0.7$ on clean, \textbf{$+1.7$ on rotated} -- modality-invariant
-trade-off without retraining.}
+{\small In this experiment, OLT \emph{hurts} ($-1.8$ on rotated vs.\ the
+fair NS baseline). The nuclear-norm linear prior mismatches the
+nonlinear, ReLU-activated CNN features.}
 \end{frame}
 
 % --- 8 ---------------------------------------------------------------
@@ -176,8 +178,8 @@ $1.0$ & $0.7926$ & $0.6195$ & $0.971$ & collapse \\
 \begin{itemize}
 \item One nuclear-norm functional jointly enforces \emph{intra-class
 low rank} and \emph{inter-class orthogonality}.
-\item CCCP solver is short ($<\!200$ lines) and works across faces,
-digits, and CNN features.
+\item CCCP solver is short ($<\!200$ lines) and works across faces
+and digits.
 \item Empirical wins:
 \begin{itemize}
 \item YaleB classification: \textbf{$+4$ pts over LDA}.
@@ -186,8 +188,9 @@ digits, and CNN features.
 \item OLT-regularized CNN: matches CE on clean, \textbf{$+0.7$} on rotated,
 with measurable orthogonality of the learned feature space.
 \end{itemize}
-\item Limitation: SVDs per batch (modest cost), and very large
-$\lambda$ overpowers cross-entropy.
+\item Limitations: post-hoc OLT hurts on frozen CNN features
+(linear prior vs.\ nonlinear ReLU); SVDs per batch (modest cost);
+very large $\lambda$ overpowers cross-entropy.
 \end{itemize}
 \end{frame}
 

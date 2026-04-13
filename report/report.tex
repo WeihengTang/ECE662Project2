@@ -435,8 +435,10 @@ than a point-wise linear boundary.
 
 Against this fair baseline, the joint OLT transformation actually
 \emph{hurts} by $-1.8$ points on the rotated set ($89.89\%\to 88.11\%$).
-This holds even when we raise $d_{\text{out}}$ to $128$ (no dimension
-reduction), ruling out information loss as the cause. The explanation
+This holds across all tested output dimensions
+($d_{\text{out}}\in\{32,64,96,128\}$; see the recorded sweep in
+\texttt{cnn\_olt\_summary.json}), ruling out information loss as the
+cause. The explanation
 lies in a mismatch of assumptions: OLT's nuclear-norm prior assumes
 that each class occupies a \emph{linear} subspace, which fits raw
 pixels and PCA features well (Part~1, Part~2 Tasks~1--2) but not the
@@ -446,7 +448,7 @@ well-clustered but not necessarily low-rank in the matrix sense;
 imposing a linear low-rank constraint on top of this over-regularises
 and discards useful nonlinear structure.
 
-This negative result is itself informative: it highlights that the OLT
+This negative result is itself informative: in this experiment, the OLT
 linear prior is complementary to, rather than a replacement for, the
 nonlinear feature learning done by CNNs. Part~3 explores a more
 principled integration, where the OLT loss is applied \emph{during}

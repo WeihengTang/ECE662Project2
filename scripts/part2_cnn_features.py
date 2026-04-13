@@ -64,33 +64,43 @@ def main():
     acc_raw_rot  = accuracy(y_te, nearest_subspace_classifier(raw_te_r, subs_raw).numpy())
     print(f"Frozen CNN + NS (no OLT): orig={acc_raw_orig:.4f}  rot={acc_raw_rot:.4f}")
 
-    # ---- Joint OLT on [orig, rot] features (feature-column concatenation) ----
+    # ---- Joint OLT on concatenated [orig, rot] features ----
+    # Both modalities are stacked along the sample (row) axis so that
+    # each class block contains samples from both domains.  The OLT
+    # solver then minimises sum_c ||T Y_c||_* - ||T Y||_*, which forces
+    # the two modalities into a shared per-class subspace.
     Ztr_joint = Ztr_raw
     ytr_joint = ytr_raw
     Ztr_t = torch.from_numpy(Ztr_joint).double()
     ytr_t = torch.from_numpy(ytr_joint).long()
 
-    T, hist = olt_cccp(
-        Ztr_t, ytr_t,
-        d_out=32, n_outer=80, n_inner=8, lr=0.5, verbose=False,
-    )
-    print(f"OLT obj: init={hist.objective[0]:.2f} best={min(hist.objective):.2f}")
+    # Sweep over d_out to rule out information loss as a confounder.
+    print("\nOLT d_out sweep:")
+    olt_sweep = {}
+    for d_out in [32, 64, 96, 128]:
+        T, hist = olt_cccp(
+            Ztr_t, ytr_t,
+            d_out=d_out, n_outer=80, n_inner=8, lr=0.5, verbose=False,
+        )
+        def apply(F): return (torch.from_numpy(F).double() @ T.T).float()
+        F_tr = apply(Ztr_joint); y_sub = torch.from_numpy(ytr_joint).long()
+        F_te_o_olt = apply(f_te_o);  F_te_r_olt = apply(f_te_r)
 
-    def apply(F): return (torch.from_numpy(F).double() @ T.T).float()
-    F_tr = apply(Ztr_joint); y_sub = torch.from_numpy(ytr_joint).long()
-    F_te_o = apply(f_te_o);  F_te_r = apply(f_te_r)
+        subs = fit_class_subspaces(F_tr, y_sub, energy=0.95, max_rank=6)
+        ao = accuracy(y_te, nearest_subspace_classifier(F_te_o_olt, subs).numpy())
+        ar = accuracy(y_te, nearest_subspace_classifier(F_te_r_olt, subs).numpy())
+        print(f"  d_out={d_out:3d}  orig={ao:.4f}  rot={ar:.4f}  obj_best={min(hist.objective):.2f}")
+        olt_sweep[d_out] = {"orig": ao, "rot": ar, "obj_best": min(hist.objective)}
 
-    subs = fit_class_subspaces(F_tr, y_sub, energy=0.95, max_rank=6)
-    pred_o = nearest_subspace_classifier(F_te_o, subs).numpy()
-    pred_r = nearest_subspace_classifier(F_te_r, subs).numpy()
-    acc_olt_orig = accuracy(y_te, pred_o)
-    acc_olt_rot  = accuracy(y_te, pred_r)
-    print(f"Frozen CNN + OLT + NS:    orig={acc_olt_orig:.4f}  rot={acc_olt_rot:.4f}")
+    # Use d_out=32 as the primary result for the table / figure.
+    acc_olt_orig = olt_sweep[32]["orig"]
+    acc_olt_rot  = olt_sweep[32]["rot"]
 
     results = {
         "baseline_frozen_cnn_head":  {"orig": acc_base_orig,  "rot": acc_base_rot},
         "frozen_cnn_ns_no_olt":      {"orig": acc_raw_orig,   "rot": acc_raw_rot},
         "frozen_cnn_olt_ns":         {"orig": acc_olt_orig,   "rot": acc_olt_rot},
+        "olt_d_out_sweep":           olt_sweep,
     }
     with open(os.path.join(OUT_DIR, "cnn_olt_summary.json"), "w") as f:
         json.dump(results, f, indent=2)
