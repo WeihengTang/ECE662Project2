@@ -46,14 +46,19 @@ class MnistCNN(nn.Module):
         self.fc1 = nn.Linear(9216, 128)     # penultimate (128-d features)
         self.fc2 = nn.Linear(128, 10)
 
-    def features(self, x):
+    def features_pre_fc2(self, x, post_relu: bool = True):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2)
         x = self.dropout1(x)
         x = torch.flatten(x, 1)
-        x = F.relu(self.fc1(x))
+        x = self.fc1(x)
+        if post_relu:
+            x = F.relu(x)
         return x
+
+    def features(self, x):
+        return self.features_pre_fc2(x, post_relu=True)
 
     def forward(self, x):
         feat = self.features(x)
@@ -142,12 +147,14 @@ def main():
     print(f"\n[baseline CNN]  test_orig={acc_orig:.4f}  test_rot={acc_rot:.4f}")
 
     # ------------ feature extraction (penultimate layer) ---------------
-    def extract(X_np, labels):
+    def extract(X_np, labels, post_relu=True):
         xt = torch.from_numpy(norm(X_np)).unsqueeze(1)
         feats = []
         with torch.no_grad():
             for i in range(0, len(xt), 512):
-                f_i = model.features(xt[i:i+512].to(device)).cpu().numpy()
+                f_i = model.features_pre_fc2(
+                    xt[i:i+512].to(device), post_relu=post_relu
+                ).cpu().numpy()
                 feats.append(f_i)
         return np.concatenate(feats, 0), labels
 
@@ -162,10 +169,14 @@ def main():
     Xtr_sub = Xtr[idx_tr]; ytr_sub = ytr[idx_tr]
     Xtr_rot_sub = rotate_batch_np(Xtr_sub, rng2)
 
-    f_tr_o, _ = extract(Xtr_sub,      ytr_sub)
-    f_tr_r, _ = extract(Xtr_rot_sub,  ytr_sub)
-    f_te_o, _ = extract(Xte,          yte)
-    f_te_r, _ = extract(Xte_rot,      yte)
+    f_tr_o, _ = extract(Xtr_sub,      ytr_sub, post_relu=True)
+    f_tr_r, _ = extract(Xtr_rot_sub,  ytr_sub, post_relu=True)
+    f_te_o, _ = extract(Xte,          yte,     post_relu=True)
+    f_te_r, _ = extract(Xte_rot,      yte,     post_relu=True)
+    f_tr_o_pre, _ = extract(Xtr_sub,     ytr_sub, post_relu=False)
+    f_tr_r_pre, _ = extract(Xtr_rot_sub, ytr_sub, post_relu=False)
+    f_te_o_pre, _ = extract(Xte,         yte,     post_relu=False)
+    f_te_r_pre, _ = extract(Xte_rot,     yte,     post_relu=False)
 
     np.savez_compressed(
         os.path.join(OUT_DIR, "cnn_features.npz"),
@@ -173,6 +184,10 @@ def main():
         f_tr_r=f_tr_r,
         f_te_o=f_te_o, y_te=yte,
         f_te_r=f_te_r,
+        f_tr_o_pre=f_tr_o_pre,
+        f_tr_r_pre=f_tr_r_pre,
+        f_te_o_pre=f_te_o_pre,
+        f_te_r_pre=f_te_r_pre,
         baseline_acc_orig=np.array(acc_orig),
         baseline_acc_rot =np.array(acc_rot),
     )

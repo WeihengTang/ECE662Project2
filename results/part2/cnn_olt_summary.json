@@ -3,34 +3,78 @@
     "orig": 0.9924,
     "rot": 0.8639
   },
-  "frozen_cnn_ns_no_olt": {
-    "orig": 0.9896,
-    "rot": 0.8989
-  },
-  "frozen_cnn_olt_ns": {
-    "orig": 0.985,
-    "rot": 0.8811
-  },
-  "olt_d_out_sweep": {
-    "32": {
+  "post_relu_fc1": {
+    "raw_origin_ns": {
+      "orig": 0.9896,
+      "rot": 0.8989
+    },
+    "raw_affine_ns": {
+      "orig": 0.9892,
+      "rot": 0.9091
+    },
+    "raw_global_center_origin_ns": {
+      "orig": 0.9867,
+      "rot": 0.9055
+    },
+    "olt_d_out_sweep": {
+      "32": {
+        "origin_ns": {
+          "orig": 0.985,
+          "rot": 0.8811,
+          "obj_best": 154.58999890233846
+        },
+        "centered_affine_ns": {
+          "orig": 0.9859,
+          "rot": 0.8942,
+          "obj_best": 155.84694635200364
+        }
+      },
+      "64": {
+        "origin_ns": {
+          "orig": 0.986,
+          "rot": 0.877,
+          "obj_best": 223.6815614334414
+        },
+        "centered_affine_ns": {
+          "orig": 0.9868,
+          "rot": 0.9049,
+          "obj_best": 224.90166044408323
+        }
+      },
+      "96": {
+        "origin_ns": {
+          "orig": 0.986,
+          "rot": 0.8803,
+          "obj_best": 254.23237570958761
+        },
+        "centered_affine_ns": {
+          "orig": 0.9871,
+          "rot": 0.9075,
+          "obj_best": 255.24935611150573
+        }
+      },
+      "128": {
+        "origin_ns": {
+          "orig": 0.9861,
+          "rot": 0.8799,
+          "obj_best": 242.68243334652016
+        },
+        "centered_affine_ns": {
+          "orig": 0.9871,
+          "rot": 0.9078,
+          "obj_best": 242.97718057949967
+        }
+      }
+    },
+    "primary_origin_olt_ns": {
       "orig": 0.985,
       "rot": 0.8811,
       "obj_best": 154.58999890233846
     },
-    "64": {
-      "orig": 0.986,
-      "rot": 0.877,
-      "obj_best": 223.6815614334414
-    },
-    "96": {
-      "orig": 0.986,
-      "rot": 0.8803,
-      "obj_best": 254.23237570958761
-    },
-    "128": {
-      "orig": 0.9861,
-      "rot": 0.8799,
-      "obj_best": 242.68243334652016
+    "primary_centered_affine_olt_ns": {
+      "orig": 0.9859,
+      "rot": 0.8942,
+      "obj_best": 155.84694635200364
     }
   }
 }

@@ -208,6 +208,33 @@ def fit_class_subspaces(
     return subspaces
 
 
+def fit_affine_class_subspaces(
+    F_train: torch.Tensor,
+    y_train: torch.Tensor,
+    energy: float = 0.95,
+    max_rank: Optional[int] = None,
+) -> dict:
+    """Fit an affine subspace per class.
+
+    This is often a better model for deep features than a subspace through the
+    origin because class clouds can be well clustered around nonzero means.
+    """
+    subspaces = {}
+    for c in torch.unique(y_train).tolist():
+        Fc = F_train[y_train == c]                         # (n_c, d_out)
+        mean = Fc.mean(dim=0)
+        F0 = Fc - mean
+        U, S, Vh = torch.linalg.svd(F0, full_matrices=False)
+        total = (S ** 2).sum()
+        cum = torch.cumsum(S ** 2, dim=0) / (total + 1e-12)
+        r = int((cum < energy).sum().item()) + 1
+        if max_rank is not None:
+            r = min(r, max_rank)
+        basis = Vh[:r].T                                   # (d_out, r)
+        subspaces[int(c)] = {"mean": mean, "basis": basis}
+    return subspaces
+
+
 def nearest_subspace_classifier(
     F_test: torch.Tensor,
     subspaces: dict,
@@ -225,6 +252,26 @@ def nearest_subspace_classifier(
         res = torch.linalg.norm(F_test - proj, dim=1)      # (N,)
         residuals.append(res)
     R = torch.stack(residuals, dim=1)                      # (N, C)
+    idx = R.argmin(dim=1)
+    classes_t = torch.tensor(classes, device=F_test.device)
+    return classes_t[idx]
+
+
+def nearest_affine_subspace_classifier(
+    F_test: torch.Tensor,
+    subspaces: dict,
+) -> torch.Tensor:
+    """Assign to the class whose affine subspace has minimum residual."""
+    classes = sorted(subspaces.keys())
+    residuals = []
+    for c in classes:
+        mean = subspaces[c]["mean"]                        # (d_out,)
+        B = subspaces[c]["basis"]                          # (d_out, r_c)
+        X0 = F_test - mean.unsqueeze(0)
+        proj = X0 @ B @ B.T
+        res = torch.linalg.norm(X0 - proj, dim=1)
+        residuals.append(res)
+    R = torch.stack(residuals, dim=1)
     idx = R.argmin(dim=1)
     classes_t = torch.tensor(classes, device=F_test.device)
     return classes_t[idx]
